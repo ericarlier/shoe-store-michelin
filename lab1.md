@@ -29,7 +29,7 @@ Let's verify all resources which were created for you before you start using the
 
 Login to [Confluent Cloud](https://confluent.cloud) with the username and password communicated to you prior to the workshop.
 
-You also received a "Team Name" prior to the workshop. **This "Team Name" is important** and it will referred later in this doc as **`<team_name>`**
+You also received a "Team Name" prior to the workshop. **This "Team Name" is important** and it will be referred later in this doc as **`<team_name>`**
 
 You only have access to one environment named `michelin_flink_handson_terraform`
 
@@ -226,6 +226,7 @@ NOTE: You can find more information about Flink Window aggregations [here.](http
 Flink allows you to define a primary key for your table. The primary key is a column whose value is unique for each record.
 
 Let's create a new table that will store unique customers only.
+> [!WARNING]
 > **Don't forget to replace `<team_name>`**
 
 ```
