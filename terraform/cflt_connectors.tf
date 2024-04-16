@@ -2,7 +2,7 @@
 # Service Accounts (Connectors)
 # --------------------------------------------------------
 resource "confluent_service_account" "connectors" {
-  display_name = "connectors-${random_id.id.hex}"
+  display_name = "connectors-sa"
   description  = local.description
   lifecycle {
     prevent_destroy = false
@@ -180,7 +180,7 @@ resource "confluent_kafka_acl" "connectors_source_consumer_group" {
 # Credentials / API Keys
 # --------------------------------------------------------
 resource "confluent_api_key" "connector_key" {
-  display_name = "connector-${var.cc_cluster_name}-key-${random_id.id.hex}"
+  display_name = "connector-${var.cc_cluster_name}-key"
   description  = local.description
   owner {
     id          = confluent_service_account.connectors.id
@@ -393,6 +393,7 @@ resource "confluent_connector" "datagen_products" {
   lifecycle {
     prevent_destroy = false
   }
+  status = "${var.connectors_status}"
 }
 
 # datagen_customers
@@ -427,6 +428,7 @@ resource "confluent_connector" "datagen_customers" {
   lifecycle {
     prevent_destroy = false
   }
+  status = "${var.connectors_status}"
 }
 
 # datagen_orders
@@ -461,4 +463,5 @@ resource "confluent_connector" "datagen_orders" {
   lifecycle {
     prevent_destroy = false
   }
+  status = "${var.connectors_status}"
 }

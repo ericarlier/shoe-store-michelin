@@ -1,14 +1,18 @@
 locals {
-  description = "Resource created using terraform"
+  description = "Resource created using terraform for Michelin FlinkSQL Workshop"
 }
 
-# --------------------------------------------------------
-# This 'random_id_4' will make whatever you create (names, etc)
-# unique in your account.
-# --------------------------------------------------------
-resource "random_id" "id" {
-  byte_length = 4
+# --------------------------------------------
+# Workshop Users
+# --------------------------------------------
+variable "workshop_users" {
+  type    = map(string)
+  default = {
+    tokyo = "eric.carlier+dp@confluent.io"
+    paris = "eric.carlier+paris@confluent.io"
+  }
 }
+
 
 # ----------------------------------------
 # Generic prefix to use in a common organization
@@ -35,12 +39,12 @@ variable "confluent_cloud_api_secret" {
 
 variable "cc_cloud_provider" {
   type    = string
-  default = "AWS"
+  default = "AZURE"
 }
 
 variable "cc_cloud_region" {
   type    = string
-  default = "eu-central-1"
+  default = "westeurope"
 }
 
 variable "cc_env_name" {
@@ -63,17 +67,40 @@ variable "cc_availability" {
 # ------------------------------------------
 variable "sr_cloud_provider" {
   type    = string
-  default = "AWS"
+  default = "AZURE"
 }
 
 variable "sr_cloud_region" {
   type    = string
-  default = "eu-central-1"
+  default = "westeurope"
 }
 
 variable "sr_package" {
   type    = string
-  default = "ESSENTIALS"
+  default = "ADVANCED"
+}
+
+# --------------------------------------------
+# Confluent Cloud Flink Compute Pool variables
+# --------------------------------------------
+variable "cc_dislay_name" {
+  type    = string
+  default = "standard_compute_pool"
+}
+
+variable "cc_compute_pool_name" {
+  type    = string
+  default = "cc_handson_flink"
+}
+
+variable "cc_compute_pool_cfu" {
+  type    = number
+  default = 5
+}
+
+variable "cc_compute_pool_region" {
+  type    = string
+  default = "azure.westeurope"
 }
 
 # --------------------------------------------
@@ -92,4 +119,9 @@ variable "cc_connector_dsoc_customers_name" {
 variable "cc_connector_dsoc_orders_name" {
   type    = string
   default = "DSoC_orders"
+}
+
+variable "connectors_status" {
+  type    = string
+  default = "RUNNING"
 }

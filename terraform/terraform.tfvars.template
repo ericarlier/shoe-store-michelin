@@ -1,0 +1,4 @@
+confluent_cloud_api_key = "<YourConfluentCloudAPIKey>"
+confluent_cloud_api_secret = "<YourConfluentCloudAPISecret>"
+use_prefix = "<YourPrefixForResources>_"
+connectors_status = "RUNNING"

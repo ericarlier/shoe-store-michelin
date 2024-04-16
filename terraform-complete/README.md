@@ -1,4 +1,5 @@
 ![image](img/confluent-logo-300-2.png)
+# This terraform has not been updated and should not be used !
 
 # Finished Workshop Deployment via terraform
 

@@ -1,13 +1,13 @@
 ![image](terraform/img/confluent-logo-300-2.png)
 # Lab 1
 
-All required resources in Confluent Cloud must be already created for this lab to work correctly. If you haven't already, please follow the [prerequisites](prereq.md).
+All required resources in Confluent Cloud have already been created for you for this lab to work correctly
 
 ## Content of Lab 1
 
 [1. Verify Confluent Cloud Resources](lab1.md#1-verify-confluent-cloud-resources)
 
-[2. Create Pool](lab1.md#2-create-pool)
+[2. Your Flink Compute Pool](lab1.md#2-your-flink-compute-pool)
 
 [3. Connecting to Flink](lab1.md#3-connecting-to-flink)
 
@@ -23,17 +23,28 @@ All required resources in Confluent Cloud must be already created for this lab t
 
 [9. Flink Jobs](lab1.md#9-flink-jobs)
 
+
 ## 1. Verify Confluent Cloud Resources
-Let's verify if all resources were created correctly and we can start using them.
+Let's verify all resources which were created for you before you start using them.
+
+Login to [Confluent Cloud](https://confluent.cloud) with the username and password communicated to you prior to the workshop.
+
+You also received a "Team Name" prior to the workshop. **This "Team Name" is important** and it will referred later in this doc as **`<team_name>`**
+
+You only have access to one environment named `michelin_flink_handson_terraform`
+
+Navigate into this environment
 
 ### Kafka Topics
-Check if the following topics exist in your Kafka cluster:
+Navigate into the `michelin_cc_handson_cluster` kafka cluster
+
+Check the following topics in the Kafka cluster:
  * shoe_products (for product data aka Product Catalog),
  * shoe_customers (for customer data aka Customer CRM),
  * shoe_orders (for realtime order transactions aka Billing System).
 
 ### Schemas in Schema Registry
-Check if the following Avro schemas exist in your Schema Registry:
+Check the following Avro schemas in your Schema Registry:
  * shoe_products-value,
  * shoe_customers-value,
  * shoe_orders-value.
@@ -41,7 +52,7 @@ Check if the following Avro schemas exist in your Schema Registry:
 NOTE: Schema Registry is at the Environment level and can be used for multiple Kafka clusters.
 
 ### Datagen Connectors
-Your Kafka cluster should have three Datagen Source Connectors running. Check if their topic and template configurations match the table below.
+Your Kafka cluster has three Datagen Source Connectors running. Check if their topic and template configurations match the table below.
 
 | Connector Name (can be anything)     |      Topic      | Format |             Template | 
 |--------------------------------------|:---------------:|-------:|---------------------:|
@@ -49,29 +60,20 @@ Your Kafka cluster should have three Datagen Source Connectors running. Check if
 | **DatagenSourceConnector_customers** | shoe_customers  |   AVRO |  **Shoes customers** | 
 | **DatagenSourceConnector_orders**    |   shoe_orders   |   AVRO |     **Shoes orders** | 
 
-## 2. Create Pool
+## 2. Your Flink Compute Pool
 
-### Create Flink Compute Pool
-Create a Flink Compute Pool in environment `handson-flink`. Now go back to environment `handson-flink` and choose the `Flink` Tab. From there we create a new compute pool:
-* choose a cloud region, click `continue` and 
-* enter Pool Name: `cc_flink_compute_pool` with 10 Confluent Flink Units (CFU) and 
-* click `Continue` button and then `Finish`.
-* 
-The pool will be provisioned and ready to use in a couple of moments.
-AWS Pools take 1-2 minutes. Azure Pools can take 5-7 minutes.
+Your Flink Compute Pool has already been created for you
 
-![image](terraform/img/flinkpool.png)
+Your compute pool is named `<team_name>_cc_handson_flink`
+
+> [!WARNING]
+> During the rest of the lab, **make sure you always use your assigned Compute Pool with your `<team_name>`**
 
 
 ## 3. Connecting to Flink 
 You can use your web browser or console to enter Flink SQL statements.
-  * **Web UI** - from the Home page click on the `Stream Processing` on the left side navigation
-    Select you environment `handson-flink` and click button 'Create workspace'
-    - select your cloud provider and region you want to use
-    - click 'Create workspace'
-
-    ![image](terraform/img/flinkCreateWorkspace.png)
-
+  * **Web UI** - click on the button `Open SQL workspace` on your Flink Compute Pool
+    As you have access to only one environment and one cluster, You do not have to set which catalog (environment) and database (kafka cluster) you want to use (in classical situations, you will have to)
 
   * **Console** - copy/paste the command from your Flink Compute Pool to the command line.    
   Of course you could also use the the Flink SQL Shell. For this, you need to have Confluent Cloud Console tool installed and be logged in with correct access rights.
@@ -81,6 +83,9 @@ You can use your web browser or console to enter Flink SQL statements.
   ```
 
 NOTE: You can also access your Flink Compute Pool from the Data Portal as shown below. Just click on `Data Portal` in the main menu on the left side. Then select your Environment. You should see your topics. When you click on any of the topic tiles you can query the topic's data using Flink. 
+
+Data Portal: Kafka Topics Tiles
+![image](terraform/img/dataPortal1.png)
 
 Data Portal: `shoe_order` topic selected. Click on `Query` button to access your Flink Compute Pool.
 ![image](terraform/img/dataPortal2.png)
@@ -99,17 +104,6 @@ Following mappings exist:
 
 We will now work with the following SQL Worksheet:
 ![image](terraform/img/sql_worksheet.png)
-
-Make sure you work with the correct Flink catalog (=environment) and database (=Kafka cluster).
- ![image](terraform/img/sqlWorksheetDetail.png)
-
-If you are using console client you need to select your catalog and database:
-```
-USE CATALOG <MY CONFLUENT ENVIRONMENT NAME>;
-```
-```
-USE <MY CONFLUENT KAFKA CLUSTER NAME>;
-```
 
 Check if you can see your catalog (=Environment) and databases (=Kafka Clusters):
 ```
@@ -162,7 +156,7 @@ SELECT * FROM shoe_customers
   WHERE `state` = 'Texas' AND `last_name` LIKE 'B%';
 ```
 
-Check all attributes of the `shoe_orders` table including hidden attributes. This will show regular DESCRIBE and system columns.
+Check all attributes of the `shoe_orders` table including hidden attributes.
 ```
 DESCRIBE EXTENDED shoe_orders;
 ```
@@ -229,11 +223,13 @@ NOTE: You can find more information about Flink Window aggregations [here.](http
 
 ### 8. Tables with Primary Key 
 
-When you define a primary key in Flink SQL, you specify one or more columns in a table that uniquely identify each row. This is particularly important in streaming scenarios, where state must be correctly maintained.
+Flink allows you to define a primary key for your table. The primary key is a column whose value is unique for each record.
 
-Let's create a new table to deduplicate records from our customers stream.
+Let's create a new table that will store unique customers only.
+> **Don't forget to replace `<team_name>`**
+
 ```
-CREATE TABLE shoe_customers_keyed(
+CREATE TABLE <team_name>_shoe_customers_keyed(
   customer_id STRING,
   first_name STRING,
   last_name STRING,
@@ -241,33 +237,31 @@ CREATE TABLE shoe_customers_keyed(
   PRIMARY KEY (customer_id) NOT ENFORCED
   );
 ```
-
- * customer_id is defined as the primary key
- * PRIMARY KEY (customer_id) NOT ENFORCED specifies the primary key constraint. In Flink SQL, primary keys are currently not enforced by default due to the challenges of ensuring uniqueness across distributed systems. The NOT ENFORCED clause reflects this, indicating that while the primary key is used for optimizations and correct processing, it does not guarantee data uniqueness constraints as a traditional database might.
+Compare the new table `<team_name>_shoe_customers_keyed` with `shoe_customers`, what is the difference?
 
 ```bash
-SHOW CREATE TABLE shoe_customers_keyed;
+SHOW CREATE TABLE <team_name>_shoe_customers_keyed;
 ```
 We do have a different [changelog.mode](https://docs.confluent.io/cloud/current/flink/reference/statements/create-table.html#changelog-mode) and a [primary key](https://docs.confluent.io/cloud/current/flink/reference/statements/create-table.html#primary-key-constraint) constraint. What does this mean?
 
 NOTE: You can find more information about primary key constraints [here.](https://docs.confluent.io/cloud/current/flink/reference/statements/create-table.html#primary-key-constraint)
 
-Create a new Flink job to copy customer records from the original table to the new table.
+Create a new Flink job to copy customer data from the original table to the new table.
 ```
-INSERT INTO shoe_customers_keyed
+INSERT INTO <team_name>_shoe_customers_keyed
   SELECT id, first_name, last_name, email
     FROM shoe_customers;
 ```
 
-Show the amount of cutomers in `shoe_customers_keyed`.
+Show the amount of cutomers in `<team_name>_shoe_customers_keyed`.
 ```
-SELECT COUNT(*) as AMOUNTROWS FROM shoe_customers_keyed;
+SELECT COUNT(*) as AMOUNTROWS FROM <team_name>_shoe_customers_keyed;
 ```
 
 Look up one specific customer:
 ```
 SELECT * 
- FROM shoe_customers_keyed  
+ FROM <team_name>_shoe_customers_keyed  
  WHERE customer_id = 'b523f7f3-0338-4f1f-a951-a387beeb8b6a';
 ```
 
@@ -278,11 +272,11 @@ SELECT *
  WHERE id = 'b523f7f3-0338-4f1f-a951-a387beeb8b6a';
 ```
 
-We also need to dedupplicate records for our product catalog.
+We also need to create Primary Key table for our product catalog.
 
 Prepare a new table that will store unique products only:
 ```
-CREATE TABLE shoe_products_keyed(
+CREATE TABLE <team_name>_shoe_products_keyed(
   product_id STRING,
   brand STRING,
   model STRING,
@@ -294,7 +288,7 @@ CREATE TABLE shoe_products_keyed(
 
 Create a new Flink job to copy product data from the original table to the new table. 
 ```
-INSERT INTO shoe_products_keyed
+INSERT INTO <team_name>_shoe_products_keyed
   SELECT id, brand, `name`, sale_price, rating 
     FROM shoe_products;
 ```
@@ -302,7 +296,7 @@ INSERT INTO shoe_products_keyed
 Check if only a single record is returned for some product.
 ```
 SELECT * 
- FROM shoe_products_keyed  
+ FROM <team_name>_shoe_products_keyed  
  WHERE product_id = '0fd15be0-8b95-4f19-b90b-53aabf4c49df';
 ```
 
@@ -327,9 +321,9 @@ confluent flink statement list --cloud aws --region eu-central-1 --environment <
 #                                |                    | ENFORCED   );                  |              |           |                                          
 # ....
 # Exceptions
-confluent flink statement exception list <name> --cloud aws --region eu-central-1 --environment <your env-id>
-# Descriobe Statements
-confluent flink statement describe <name> --cloud aws --region eu-central-1 --environment <your env-id>
+confluent flink statement exception list <name> --cloud azure --region westeurope --environment <your env-id>
+# Describe Statements
+confluent flink statement describe <name> --cloud azure --region westeurope --environment <your env-id>
 ```
 
 This is the end of Lab1, please continue with [Lab2](lab2.md).
